@@ -1,0 +1,44 @@
+      - orderer.main.tcloud.kpn.org
+      - peer0.crm.main.tcloud.kpn.org
+      - peer0.ebs.main.tcloud.kpn.org
+      - peer0.lsp.main.tcloud.kpn.org
+      - peer0.delivery.main.tcloud.kpn.org
+
+	  
+	  
+export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/crm.main.tcloud.kpn.org/users/Admin@crm.main.tcloud.kpn.org/msp
+export CORE_PEER_ADDRESS=peer0.crm.main.tcloud.kpn.org:7051
+export CORE_PEER_LOCALMSPID="crmMSP"
+
+	  
+export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/ebs.main.tcloud.kpn.org/users/Admin@ebs.main.tcloud.kpn.org/msp
+export CORE_PEER_ADDRESS=peer0.ebs.main.tcloud.kpn.org:7051
+export CORE_PEER_LOCALMSPID="ebsMSP"
+
+export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/lsp.main.tcloud.kpn.org/users/Admin@lsp.main.tcloud.kpn.org/msp
+export CORE_PEER_ADDRESS=peer0.lsp.main.tcloud.kpn.org:7051
+export CORE_PEER_LOCALMSPID="lspMSP"
+
+
+
+export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/delivery.main.tcloud.kpn.org/users/Admin@delivery.main.tcloud.kpn.org/msp
+export CORE_PEER_ADDRESS=peer0.delivery.main.tcloud.kpn.org:7051
+export CORE_PEER_LOCALMSPID="deliveryMSP"
+
+
+docker exec -it cli bash
+
+export CHANNEL_NAME=mychannel
+peer channel create -o orderer.main.tcloud.kpn.org:7050 -c $CHANNEL_NAME -f ./channel-artifacts/channel.tx
+
+peer channel join -b mychannel.block
+
+peer chaincode install -n mycc -v 1.0 -p github.com/chaincode_example02/go/
+
+peer chaincode instantiate -o orderer.main.tcloud.kpn.org:7050 -C mychannel -n mycc -v 1.0 -c '{"Args":["init","a", "100", "b","200"]}' -P "OR ('crmMSP.peer','esbMSP.peer','lspMSP.peer', 'deliveryMSP.peer')"
+
+peer chaincode query -C mychannel -n mycc -c '{"Args":["query","a"]}'
+
+peer chaincode invoke -o orderer.main.tcloud.kpn.org:7050 -C $CHANNEL_NAME -n mycc --peerAddresses -c '{"Args":["invoke","a","b","10"]}'
+
+
